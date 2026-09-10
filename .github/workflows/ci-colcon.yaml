@@ -1,36 +1,29 @@
 name: CI of NMPC (colcon)
 
 on:
-  push:
-    branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
-  schedule:
-    - cron: '0 0 * * 0'
+  workflow_dispatch: 
 
 jobs:
 
-  clang-format:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Install clang-format-14
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install clang-format-14
-      - name: Run clang-format-check
-        run: |
-          ./.clang-format-check.sh
+  # clang-format:
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@v3
+  #     - name: Install clang-format-14
+  #       run: |
+  #         sudo apt-get -qq update
+  #         sudo apt-get -qq install clang-format-14
+  #     - name: Run clang-format-check
+  #       run: |
+  #         ./.clang-format-check.sh
 
   build-and-test:
     strategy:
       fail-fast: false
       matrix:
-        os: [Ubuntu-22.04, Ubuntu-24.04]
-        build-type: [Debug, RelWithDebInfo, Release]
+        os: [Ubuntu-24.04]
+        build-type: [Debug]
         include:
           - build-type: Debug
             optimize-for-native: OFF
@@ -68,27 +61,27 @@ jobs:
           build-packages: NMPC
           test-packages: NMPC
 
-      - name: Upload documentation
-        # Only run for one configuration and on origin master branch
-        if: env.UPLOAD_DOCUMENTATION == 'true'        
-        run: |
-          set -e
-          set -x
-          cd ${GITHUB_WORKSPACE}/colcon_ws/src/${{ github.repository }}
-          git config --global user.name "Masaki Murooka"
-          git config --global user.email "m-murooka@aist.go.jp"
-          git remote set-url origin "https://mmurooka:${{ secrets.CI_TOKEN }}@github.com/isri-aist/NMPC"
-          git fetch --depth=1 origin gh-pages:gh-pages
-          git checkout --quiet gh-pages
-          rm -rf nmpc_ddp/ nmpc_fmpc/ nmpc_cgmres/ cmake/
-          cp -r ${GITHUB_WORKSPACE}/colcon_ws/install/share/doc/nmpc_ddp/doxygen-html/ nmpc_ddp
-          cp -r ${GITHUB_WORKSPACE}/colcon_ws/install/share/doc/nmpc_fmpc/doxygen-html/ nmpc_fmpc
-          cp -r ${GITHUB_WORKSPACE}/colcon_ws/install/share/doc/nmpc_cgmres/doxygen-html/ nmpc_cgmres
-          git add nmpc_ddp nmpc_fmpc nmpc_cgmres
-          git_status=`git status -s`
-          if test -n "$git_status"; then
-            git commit --quiet -m "Update Doxygen HTML files from commit ${{ github.sha }}"
-            git push origin gh-pages
-          else
-            echo "Github pages documentation is already up-to-date."
-          fi
+      # - name: Upload documentation
+      #   # Only run for one configuration and on origin master branch
+      #   if: env.UPLOAD_DOCUMENTATION == 'true'        
+      #   run: |
+      #     set -e
+      #     set -x
+      #     cd ${GITHUB_WORKSPACE}/colcon_ws/src/${{ github.repository }}
+      #     git config --global user.name "Masaki Murooka"
+      #     git config --global user.email "m-murooka@aist.go.jp"
+      #     git remote set-url origin "https://mmurooka:${{ secrets.CI_TOKEN }}@github.com/isri-aist/NMPC"
+      #     git fetch --depth=1 origin gh-pages:gh-pages
+      #     git checkout --quiet gh-pages
+      #     rm -rf nmpc_ddp/ nmpc_fmpc/ nmpc_cgmres/ cmake/
+      #     cp -r ${GITHUB_WORKSPACE}/colcon_ws/install/share/doc/nmpc_ddp/doxygen-html/ nmpc_ddp
+      #     cp -r ${GITHUB_WORKSPACE}/colcon_ws/install/share/doc/nmpc_fmpc/doxygen-html/ nmpc_fmpc
+      #     cp -r ${GITHUB_WORKSPACE}/colcon_ws/install/share/doc/nmpc_cgmres/doxygen-html/ nmpc_cgmres
+      #     git add nmpc_ddp nmpc_fmpc nmpc_cgmres
+      #     git_status=`git status -s`
+      #     if test -n "$git_status"; then
+      #       git commit --quiet -m "Update Doxygen HTML files from commit ${{ github.sha }}"
+      #       git push origin gh-pages
+      #     else
+      #       echo "Github pages documentation is already up-to-date."
+          # fi
