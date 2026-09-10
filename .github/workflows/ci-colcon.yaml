@@ -27,10 +27,7 @@ jobs:
         include:
           - build-type: Debug
             optimize-for-native: OFF
-          - build-type: RelWithDebInfo
-            optimize-for-native: OFF
-          - build-type: Release
-            optimize-for-native: ON
+
     runs-on: ${{ matrix.os }}
     steps:
       - name: Setup environment variables
